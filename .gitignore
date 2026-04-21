@@ -1,0 +1,27 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+
+# Publicized assemblies (generated at build, not committed)
+**/publicized_assemblies/
+*_public.dll
+*_publicized.dll
+Assembly-CSharp.dll
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store

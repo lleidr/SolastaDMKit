@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SolastaDMKit.CodeGen</RootNamespace>
+    <AssemblyName>SolastaDMKit.CodeGen</AssemblyName>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+</Project>

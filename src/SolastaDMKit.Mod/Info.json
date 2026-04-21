@@ -1,0 +1,9 @@
+{
+  "Id": "SolastaDMKit",
+  "DisplayName": "SolastaDMKit",
+  "Version": "0.1.0",
+  "GameVersion": "1.5.97",
+  "ManagerVersion": "0.24.0",
+  "AssemblyName": "SolastaDMKit.dll",
+  "EntryMethod": "SolastaDMKit.Main.Load"
+}

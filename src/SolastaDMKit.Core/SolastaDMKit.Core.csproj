@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SolastaDMKit.Core</RootNamespace>
+    <AssemblyName>SolastaDMKit.Core</AssemblyName>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+</Project>
