@@ -5,6 +5,7 @@ using HarmonyLib;
 using SolastaDMKit.Core.Diagnostics;
 using SolastaDMKit.Core.Events;
 using SolastaDMKit.Core.Runtime;
+using UnityEngine;
 using UnityModManagerNet;
 
 namespace SolastaDMKit;
@@ -53,10 +54,39 @@ internal static class Main
 
             _shownWelcomeModal = true;
             SxUI.Log($"[SolastaDMKit] Runtime ready. Party size = {SxParty.Count}.");
+
+            var propCount = SxProps.BlueprintCount;
+            var firstBp = SxProps.AllBlueprints().FirstOrDefault();
+            var firstBpInfo = firstBp == null
+                ? "none"
+                : $"{firstBp.Name} (env count={firstBp.PrefabsByEnvironment?.Count ?? 0})";
+            Log($"[SxProps] PropBlueprint DB: {propCount} entries; first='{firstBpInfo}'");
+
+            var sceneObjects = SxProps.AllInCurrentLocation().ToList();
+            var samples = string.Join(", ", sceneObjects.Take(5).Select(go => go.name));
+            Log($"[SxProps] Scene children under world sectors: {sceneObjects.Count}; sample: {samples}");
+
             SxUI.ShowChoice(
-                "SolastaDMKit Stage 2A smoke test.\n\nPick a button — the choice will be logged to UMM's log.",
-                new[] { "Option A", "Option B", "Option C" },
-                choice => Log($"[SxUI] Modal choice = {choice}"));
+                "SolastaDMKit 2C — pick a test:",
+                new[]
+                {
+                    "Skip / log only",
+                    "SpawnAsync only ('Rock_C')",
+                    "Full SxProps suite (spawn + clone + hide + show + destroy)",
+                },
+                choice =>
+                {
+                    Log($"[SxUI] Modal choice = {choice}");
+                    switch (choice)
+                    {
+                        case 1:
+                            RunSpawnOnlyTest();
+                            break;
+                        case 2:
+                            RunFullPropsTestSuite();
+                            break;
+                    }
+                });
         });
 
         EventBus.Subscribe<ObjectInteracted>(e =>
@@ -90,6 +120,70 @@ internal static class Main
                 var result = SxCharacters.RollSkillCheck(firstMember, "Perception", 10);
                 Log($"[SxCharacters] Perception DC 10 -> {result}");
             }
+        });
+    }
+
+    private static Vector3 PickTestPosition()
+    {
+        var service = ServiceRepository.GetService<IGameLocationCharacterService>();
+        var first = service?.PartyCharacters?.FirstOrDefault();
+        if (first != null)
+        {
+            var lp = first.LocationPosition;
+            return new Vector3(lp.x, lp.y, lp.z);
+        }
+
+        return Vector3.zero;
+    }
+
+    private static void RunSpawnOnlyTest()
+    {
+        var pos = PickTestPosition();
+        Log($"[Test] SpawnAsync('Rock_C', {pos}, identity)...");
+        SxProps.SpawnAsync("Rock_C", pos, Quaternion.identity, spawned =>
+        {
+            Log($"[Test] Spawn result: {(spawned != null ? spawned.name + " @ " + spawned.transform.position : "NULL")}");
+        });
+    }
+
+    private static void RunFullPropsTestSuite()
+    {
+        Log("[Test] === SxProps full suite start ===");
+        var pos = PickTestPosition();
+        Log($"[Test] using position = {pos}");
+
+        Log("[Test] 1. SpawnAsync('Rock_C', pos, identity)...");
+        SxProps.SpawnAsync("Rock_C", pos, Quaternion.identity, spawned =>
+        {
+            if (spawned == null)
+            {
+                Log("[Test] 1. Spawn FAILED (returned null). Aborting suite.");
+                return;
+            }
+
+            Log($"[Test] 1. Spawn OK: '{spawned.name}' at {spawned.transform.position}");
+
+            Log("[Test] 2. CloneAt(spawn, pos + (2,0,2))...");
+            var clone = SxProps.CloneAt(spawned, pos + new Vector3(2, 0, 2));
+            Log($"[Test] 2. Clone {(clone != null ? "OK: " + clone.name : "FAILED")}");
+
+            Log("[Test] 3. Hide(spawn)...");
+            SxProps.Hide(spawned);
+            Log($"[Test] 3. spawn.activeSelf after Hide = {spawned.activeSelf}");
+
+            Log("[Test] 4. Show(spawn)...");
+            SxProps.Show(spawned);
+            Log($"[Test] 4. spawn.activeSelf after Show = {spawned.activeSelf}");
+
+            Log("[Test] 5. Destroy(spawn) + Destroy(clone)...");
+            SxProps.Destroy(spawned);
+            if (clone != null)
+            {
+                SxProps.Destroy(clone);
+            }
+
+            Log("[Test] 5. Destroy() called (effect takes hold at end-of-frame)");
+            Log("[Test] === SxProps full suite end ===");
         });
     }
 }
