@@ -61,7 +61,7 @@ internal static class Main
 
         EventBus.Subscribe<ObjectInteracted>(e =>
         {
-            Log($"[Event] ObjectInteracted condIdx={e.ConditionIndex} state={e.NewState}");
+            Log($"[Event] ObjectInteracted condIdx={e.ConditionIndex} name='{e.ConditionName ?? "?"}' state={e.NewState}");
             if (e.Gadget != null)
             {
                 var roundTrip = SxGadgets.FindByUniqueName(e.Gadget.UniqueNameId);
@@ -87,8 +87,8 @@ internal static class Main
             var firstMember = SxParty.Members().FirstOrDefault();
             if (firstMember != null && e.Character == firstMember)
             {
-                var passed = SxCharacters.RollSkillCheck(firstMember, "Perception", 10);
-                Log($"[SxCharacters] Perception DC 10 -> {(passed ? "success" : "failure")}");
+                var result = SxCharacters.RollSkillCheck(firstMember, "Perception", 10);
+                Log($"[SxCharacters] Perception DC 10 -> {result}");
             }
         });
     }

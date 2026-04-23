@@ -11,6 +11,7 @@ public sealed class ObjectInteracted : ISxEvent
 {
     public GameGadget Gadget { get; internal set; }
     public int ConditionIndex { get; internal set; }
+    public string ConditionName { get; internal set; }
     public bool NewState { get; internal set; }
     public bool Skip { get; set; }
 }

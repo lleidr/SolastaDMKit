@@ -1,5 +1,6 @@
 using HarmonyLib;
 using SolastaDMKit.Core.Events;
+using SolastaDMKit.Core.Runtime;
 
 namespace SolastaDMKit.Core.Patches;
 
@@ -12,6 +13,7 @@ internal static class GameGadgetSetConditionPatch
         {
             Gadget = __instance,
             ConditionIndex = conditionIndex,
+            ConditionName = SxGadgets.ConditionNameAt(__instance, conditionIndex),
             NewState = state,
         };
         EventBus.Publish(evt);
