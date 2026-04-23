@@ -1,8 +1,10 @@
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using SolastaDMKit.Core.Diagnostics;
 using SolastaDMKit.Core.Events;
+using SolastaDMKit.Core.Runtime;
 using UnityModManagerNet;
 
 namespace SolastaDMKit;
@@ -38,13 +40,34 @@ internal static class Main
         return true;
     }
 
+    private static bool _shownWelcomeModal;
+
     private static void WireDevSubscriptions()
     {
         EventBus.Subscribe<TileEntered>(_ =>
-            Log("[Event] TileEntered"));
+        {
+            if (_shownWelcomeModal)
+            {
+                return;
+            }
+
+            _shownWelcomeModal = true;
+            SxUI.Log($"[SolastaDMKit] Runtime ready. Party size = {SxParty.Count}.");
+            SxUI.ShowChoice(
+                "SolastaDMKit Stage 2A smoke test.\n\nPick a button — the choice will be logged to UMM's log.",
+                new[] { "Option A", "Option B", "Option C" },
+                choice => Log($"[SxUI] Modal choice = {choice}"));
+        });
 
         EventBus.Subscribe<ObjectInteracted>(e =>
-            Log($"[Event] ObjectInteracted condIdx={e.ConditionIndex} state={e.NewState}"));
+        {
+            Log($"[Event] ObjectInteracted condIdx={e.ConditionIndex} state={e.NewState}");
+            if (e.Gadget != null)
+            {
+                var roundTrip = SxGadgets.FindByUniqueName(e.Gadget.UniqueNameId);
+                Log($"[SxGadgets] lookup '{e.Gadget.UniqueNameId}' -> {(roundTrip != null ? "OK" : "NOT FOUND")}, enabled={SxGadgets.IsEnabled(e.Gadget)}, activated={SxGadgets.IsActivated(e.Gadget)}");
+            }
+        });
 
         EventBus.Subscribe<DamageAbout>(e =>
             Log($"[Event] DamageAbout amount={e.RolledDamage} type={e.DamageType}"));
@@ -52,7 +75,21 @@ internal static class Main
         EventBus.Subscribe<DamageApplied>(e =>
             Log($"[Event] DamageApplied amount={e.RolledDamage} type={e.DamageType}"));
 
-        EventBus.Subscribe<TurnStarted>(_ =>
-            Log("[Event] TurnStarted"));
+        EventBus.Subscribe<TurnStarted>(e =>
+        {
+            var name = SxCharacters.GetName(e.Character);
+            Log($"[Event] TurnStarted character={name}");
+
+            var total = SxVariables.GetInt("dmkit_turn_counter", 0) + 1;
+            SxVariables.SetInt("dmkit_turn_counter", total);
+            Log($"[SxVariables] dmkit_turn_counter = {total}");
+
+            var firstMember = SxParty.Members().FirstOrDefault();
+            if (firstMember != null && e.Character == firstMember)
+            {
+                var passed = SxCharacters.RollSkillCheck(firstMember, "Perception", 10);
+                Log($"[SxCharacters] Perception DC 10 -> {(passed ? "success" : "failure")}");
+            }
+        });
     }
 }
