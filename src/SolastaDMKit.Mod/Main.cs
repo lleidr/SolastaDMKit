@@ -5,6 +5,7 @@ using HarmonyLib;
 using SolastaDMKit.Core.Diagnostics;
 using SolastaDMKit.Core.Events;
 using SolastaDMKit.Core.Runtime;
+using SolastaDMKit.Core.Scripting;
 using UnityEngine;
 using UnityModManagerNet;
 
@@ -34,6 +35,8 @@ internal static class Main
         _harmony = new Harmony(modEntry.Info.Id);
         _harmony.PatchAll(typeof(EventBus).Assembly);
         _harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+        ScriptHost.Install();
 
         WireDevSubscriptions();
 

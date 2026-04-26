@@ -5,7 +5,7 @@
     <OutputType>Library</OutputType>
     <OutputPath>$(SolastaInstallDir)\Mods\SolastaDMKit\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
