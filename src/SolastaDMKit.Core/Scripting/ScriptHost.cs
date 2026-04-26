@@ -55,6 +55,8 @@ public sealed class ScriptHost : MonoBehaviour
 
         _lastCampaignKey = key;
 
+        SxLog.Info($"[ScriptHost] Campaign change detected. Resolution: {SxCampaign.ResolutionDiagnostic()}");
+
         if (string.IsNullOrEmpty(key))
         {
             _runtime.UnloadAll();
